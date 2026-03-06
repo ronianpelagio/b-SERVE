@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-SERVE — Barangay Service & Emergency Response</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00E676;
+    --green-dark: #00C853;
+    --green-deeper: #00A846;
+    --green-light: #E8FFF3;
+    --green-mid: #CCFAE5;
+    --green-muted: rgba(0,230,118,0.12);
+    --green-border: rgba(0,200,83,0.3);
+    --white: #FFFFFF;
+    --off-white: #F6FBF8;
+    --surface2: #F1F8F4;
+    --border: #E0EDE6;
+    --border2: #C8E0D2;
+    --text: #0B2318;
+    --text2: #3A6650;
+    --text3: #789E8A;
+    --text4: #AECEBE;
+    --red: #FF3B30;
+    --amber: #FF9500;
+    --blue: #007AFF;
+    --purple: #AF52DE;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow-sm: 0 2px 10px rgba(0,60,30,0.07);
+    --shadow: 0 6px 28px rgba(0,60,30,0.1);
+    --shadow-lg: 0 16px 50px rgba(0,60,30,0.14);
+    --shadow-green: 0 4px 22px rgba(0,200,83,0.32);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--off-white);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--white);
+    border-bottom: 1.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 64px;
+  }
+  .topbar-logo { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: var(--shadow-green);
+  }
+  .logo-text .name { font-weight: 800; font-size: 18px; color: var(--text); letter-spacing: -0.5px; }
+  .logo-text .name em { color: var(--green-dark); font-style: normal; }
+  .logo-text .sub { font-size: 9.5px; font-weight: 600; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .notif-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 17px; position: relative; transition: all .2s;
+  }
+  .notif-btn:hover { background: var(--green-light); border-color: var(--green-border); }
+  .notif-badge { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--red); border: 2px solid var(--white); }
+  .user-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 40px; padding: 5px 14px 5px 6px; cursor: pointer; transition: all .2s;
+  }
+  .user-pill:hover { background: var(--green-light); border-color: var(--green-border); }
+  .user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: var(--white);
+  }
+  .user-name { font-size: 12px; font-weight: 600; color: var(--text); }
+
+  .layout { display: flex; padding-top: 64px; min-height: 100vh; }
+
+  .sidebar {
+    width: 248px; flex-shrink: 0;
+    position: fixed; top: 64px; left: 0; bottom: 0;
+    background: var(--white); border-right: 1.5px solid var(--border);
+    overflow-y: auto; padding: 18px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+    scrollbar-width: none;
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+  .sidebar-label {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 1.4px;
+    color: var(--text4); text-transform: uppercase; padding: 14px 10px 5px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: all .18s; color: var(--text2);
+    font-size: 13px; font-weight: 500;
+  }
+  .nav-item:hover { background: var(--green-light); color: var(--green-deeper); }
+  .nav-item.active {
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    color: var(--white); font-weight: 600; box-shadow: var(--shadow-green);
+  }
+  .nav-item.active .nav-badge { background: rgba(255,255,255,0.3); color: var(--white); }
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; background: var(--green-muted); color: var(--green-deeper);
+    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+  }
+  .nav-badge.red { background: rgba(255,59,48,0.1); color: var(--red); }
+
+  .main { margin-left: 248px; flex: 1; padding: 28px 28px 90px; }
+
+  .page { display: none; animation: fadeUp .22s ease; }
+  .page.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  .page-header { margin-bottom: 22px; }
+  .page-header h1 { font-size: 23px; font-weight: 800; color: var(--text); margin-bottom: 3px; letter-spacing: -0.3px; }
+  .page-header p { color: var(--text3); font-size: 13px; font-weight: 400; }
+
+  .card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+    box-shadow: var(--shadow-sm); transition: box-shadow .2s, border-color .2s;
+  }
+  .card:hover { box-shadow: var(--shadow); }
+  .card-title { font-weight: 700; font-size: 14.5px; color: var(--text); margin-bottom: 3px; }
+  .card-sub { color: var(--text3); font-size: 12px; margin-bottom: 18px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+
+  .stat-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px 20px 26px;
+    box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: all .2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .stat-left-bar { position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 16px 0 0 16px; }
+  .stat-label { font-size: 10.5px; font-weight: 700; color: var(--text3); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 8px; }
+  .stat-value { font-size: 30px; font-weight: 800; color: var(--text); }
+  .stat-icon { position: absolute; right: 18px; top: 18px; font-size: 26px; opacity: 0.14; }
+  .stat-change { font-size: 11px; color: var(--green-deeper); margin-top: 5px; font-weight: 500; }
+
+  .service-tile {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px 16px;
+    cursor: pointer; transition: all .22s; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-sm);
+  }
+  .service-tile:hover { border-color: var(--green); box-shadow: 0 8px 30px rgba(0,200,83,0.2); transform: translateY(-3px); }
+  .tile-icon { width: 52px; height: 52px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .tile-label { font-weight: 700; font-size: 12.5px; color: var(--text); }
+  .tile-desc { font-size: 11px; color: var(--text3); line-height: 1.45; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 600; }
+  .badge.pending { background: rgba(255,149,0,0.1); color: #B36B00; }
+  .badge.approved { background: rgba(0,200,83,0.12); color: var(--green-deeper); }
+  .badge.ready { background: rgba(0,122,255,0.1); color: var(--blue); }
+  .badge.completed { background: var(--surface2); color: var(--text3); }
+  .badge.rejected { background: rgba(255,59,48,0.1); color: var(--red); }
+  .badge.found { background: rgba(0,200,83,0.1); color: var(--green-deeper); }
+  .badge.lost { background: rgba(175,82,222,0.1); color: var(--purple); }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { padding: 10px 14px; text-align: left; color: var(--text3); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1.5px solid var(--border); background: var(--surface2); }
+  td { padding: 13px 14px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  td.strong { color: var(--text); font-weight: 600; }
+
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    color: var(--text); font-family: 'Poppins', sans-serif; font-size: 13px;
+    outline: none; transition: all .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green); background: var(--white); box-shadow: 0 0 0 3px var(--green-muted); }
+  input::placeholder, textarea::placeholder { color: var(--text4); }
+  textarea { resize: vertical; min-height: 88px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 10px 20px; border-radius: var(--radius-sm);
+    font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all .18s;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: var(--white); box-shadow: var(--shadow-green); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(0,200,83,0.45); }
+  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { background: var(--green-light); color: var(--green-deeper); border-color: var(--green-border); }
+  .btn-danger { background: rgba(255,59,48,0.1); color: var(--red); border: 1.5px solid rgba(255,59,48,0.2); }
+  .btn-danger:hover { background: rgba(255,59,48,0.18); }
+  .btn-sm { padding: 6px 14px; font-size: 11.5px; }
+  .btn-full { width: 100%; }
+
+  .search-bar { position: relative; margin-bottom: 18px; }
+  .search-bar input { padding-left: 40px; }
+  .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text4); font-size: 15px; pointer-events: none; }
+
+  .info-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; font-size: 11.5px; color: var(--text2); display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
+
+  .official-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); transition: all .2s; }
+  .official-card:hover { border-color: var(--green-border); box-shadow: var(--shadow); }
+  .official-avatar { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--white); }
+  .official-info { flex: 1; min-width: 0; }
+  .official-name { font-weight: 700; font-size: 13.5px; color: var(--text); }
+  .official-role { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
+  .official-contact { font-size: 11.5px; color: var(--green-deeper); margin-top: 3px; font-weight: 600; }
+
+  .emergency-btn {
+    width: 100%; padding: 20px; border-radius: var(--radius);
+    background: linear-gradient(135deg, #FF3B30, #FF1500);
+    border: none; color: var(--white); font-family: 'Poppins', sans-serif;
+    font-size: 18px; font-weight: 800; cursor: pointer; letter-spacing: 0.4px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    box-shadow: 0 8px 32px rgba(255,59,48,0.42);
+    animation: pulse-red 2.5s infinite; transition: all .2s;
+  }
+  @keyframes pulse-red { 0%,100%{box-shadow:0 8px 32px rgba(255,59,48,0.42);}50%{box-shadow:0 8px 52px rgba(255,59,48,0.68);} }
+  .emergency-btn:hover { transform: scale(1.01); }
+
+  .tracker-steps { display: flex; flex-direction: column; }
+  .tracker-step { display: flex; gap: 14px; padding-bottom: 22px; }
+  .tracker-step:last-child { padding-bottom: 0; }
+  .tracker-step-line { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 26px; }
+  .tracker-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 2px solid; }
+  .tracker-dot.done { background: var(--green); border-color: var(--green); color: var(--white); }
+  .tracker-dot.active { background: var(--green-light); border-color: var(--green); color: var(--green-deeper); }
+  .tracker-dot.waiting { background: var(--surface2); border-color: var(--border); color: var(--text4); }
+  .tracker-connector { width: 2px; flex: 1; min-height: 18px; margin-top: 4px; }
+  .tracker-connector.done { background: var(--green); }
+  .tracker-connector.pending { background: var(--border); }
+  .tracker-content { flex: 1; padding-top: 3px; }
+  .tracker-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .tracker-content p { font-size: 11.5px; color: var(--text3); }
+
+  .ordinance-item { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: border-color .2s; }
+  .ordinance-item:hover { border-color: var(--green-border); }
+  .ordinance-header { padding: 16px 20px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .ordinance-header h3 { font-weight: 700; font-size: 13.5px; margin-bottom: 2px; }
+  .ordinance-header p { font-size: 11.5px; color: var(--text3); }
+  .ordinance-body { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .3s; font-size: 13px; color: var(--text2); line-height: 1.75; border-top: 0 solid var(--border); }
+  .ordinance-body.open { max-height: 400px; padding: 16px 20px; border-top-width: 1.5px; }
+  .chevron { font-size: 12px; color: var(--text3); transition: transform .25s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .lf-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; display: flex; gap: 14px; box-shadow: var(--shadow-sm); transition: all .2s; }
+  .lf-card:hover { border-color: var(--green-border); box-shadow: var(--shadow); }
+  .lf-img { width: 68px; height: 68px; border-radius: 12px; flex-shrink: 0; background: var(--green-light); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1.5px solid var(--green-border); }
+  .lf-info { flex: 1; }
+  .lf-info h4 { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .lf-info p { font-size: 12px; color: var(--text2); line-height: 1.55; }
+  .lf-meta { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(11,35,24,0.5); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; padding: 28px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: slideUp .24s ease; box-shadow: var(--shadow-lg); scrollbar-width: none; }
+  .modal::-webkit-scrollbar { display: none; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;} }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .modal-header h2 { font-size: 18px; font-weight: 800; }
+  .modal-close { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; color: var(--text2); transition: all .18s; }
+  .modal-close:hover { background: var(--green-light); border-color: var(--green-border); }
+
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-lg); min-width: 270px; max-width: 340px; animation: slideIn .28s ease; position: relative; overflow: hidden; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:none;} }
+  .toast-icon { font-size: 20px; flex-shrink: 0; }
+  .toast-text strong { display: block; font-weight: 700; color: var(--text); font-size: 13px; }
+  .toast-text span { color: var(--text3); font-size: 11.5px; }
+  .toast-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--green); border-radius: 0 3px 14px 0; animation: shrink 4s linear forwards; }
+  @keyframes shrink { from{width:100%;}to{width:0%;} }
+
+  hr.divider { border: none; border-top: 1.5px solid var(--border); margin: 18px 0; }
+
+  .welcome-banner {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    border-radius: var(--radius); padding: 26px 30px; margin-bottom: 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    overflow: hidden; position: relative; box-shadow: var(--shadow-green);
+  }
+  .welcome-banner::before { content:''; position:absolute; right:-60px; bottom:-60px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,0.12); }
+  .welcome-banner::after { content:''; position:absolute; right:80px; top:-40px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.07); }
+  .welcome-text h2 { font-size: 21px; font-weight: 800; color: var(--white); margin-bottom: 4px; }
+  .welcome-text p { color: rgba(255,255,255,0.82); font-size: 13px; }
+  .welcome-emoji { font-size: 52px; position: relative; z-index: 1; }
+
+  .avail-bar { display: flex; gap: 3px; height: 7px; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+  .avail-seg { flex: 1; border-radius: 2px; }
+  .avail-seg.free { background: var(--green); }
+  .avail-seg.taken { background: var(--border2); }
+
+  .resource-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 18px; text-align: center; box-shadow: var(--shadow-sm); transition: all .2s; }
+  .resource-card:hover { border-color: var(--green-border); box-shadow: var(--shadow); }
+  .resource-icon { font-size: 30px; margin-bottom: 8px; }
+  .resource-name { font-weight: 700; font-size: 13.5px; margin-bottom: 3px; }
+  .resource-count { font-size: 11.5px; color: var(--text3); }
+  .resource-avail { margin-top: 10px; padding: 5px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 600; display: inline-block; }
+  .resource-avail.good { background: rgba(0,200,83,0.1); color: var(--green-deeper); }
+  .resource-avail.limited { background: rgba(255,149,0,0.1); color: #B36B00; }
+  .resource-avail.full { background: rgba(255,59,48,0.1); color: var(--red); }
+
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content:''; flex:1; height:1.5px; background:var(--border); }
+
+  .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1.5px solid var(--border); }
+  .tab { padding: 10px 18px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text3); border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; transition: all .15s; }
+  .tab.active { color: var(--green-deeper); border-bottom-color: var(--green); }
+  .tab:hover { color: var(--text); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .contact-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); transition: all .2s; }
+  .contact-card:hover { border-color: var(--green-border); box-shadow: var(--shadow); }
+  .contact-icon-wrap { width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .contact-detail { flex: 1; }
+  .contact-name { font-weight: 700; font-size: 13.5px; }
+  .contact-type { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
+  .contact-number { font-size: 12.5px; color: var(--green-deeper); margin-top: 4px; font-weight: 600; }
+
+  .mini-block { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; }
+  .hint-card { background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: var(--radius); padding: 16px 18px; }
+
+  .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1.5px solid var(--border); padding: 6px 0 10px; z-index: 100; box-shadow: 0 -4px 20px rgba(0,60,30,0.08); overflow-x: auto; }
+  .bottom-nav-inner { display: flex; min-width: max-content; width: 100%; justify-content: space-around; }
+  .bottom-nav-item { flex: 1; min-width: 60px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 8px; cursor: pointer; color: var(--text4); font-size: 9px; font-weight: 600; transition: color .15s; }
+  .bottom-nav-item .b-icon { font-size: 20px; }
+  .bottom-nav-item.active { color: var(--green-deeper); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 16px 14px 100px; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .bottom-nav { display: block; }
+    .welcome-banner { flex-direction: column; gap: 10px; text-align: center; }
+  }
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-mark">🏛️</div>
+    <div class="logo-text">
+      <div class="name">B-<em>SERVE</em></div>
+      <div class="sub">Barangay Service Portal</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="notif-btn" onclick="showToast('📢','Notifications','You have 3 unread updates.')">🔔<span class="notif-badge"></span></div>
+    <div class="user-pill"><div class="user-avatar">RR</div><span class="user-name" onclick="window.location.href='B-admin.html'">Ronian T.</span></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-label">Main</div>
+    <div class="nav-item active" onclick="goTo('dashboard',this)"><span class="nav-icon">🏠</span>Dashboard</div>
+    <div class="nav-item" onclick="goTo('documents',this)"><span class="nav-icon">📄</span>Document Requests<span class="nav-badge">3</span></div>
+    <div class="nav-item" onclick="goTo('tools',this)"><span class="nav-icon">🪑</span>Tool Reservations</div>
+    <div class="nav-item" onclick="goTo('ambulance',this)"><span class="nav-icon">🚑</span>Ambulance Schedule</div>
+    <div class="nav-item" onclick="goTo('tracker',this)"><span class="nav-icon">📦</span>Service Tracker<span class="nav-badge">5</span></div>
+    <div class="sidebar-label">Community</div>
+    <div class="nav-item" onclick="goTo('lostandfound',this)"><span class="nav-icon">🔍</span>Lost & Found<span class="nav-badge">2</span></div>
+    <div class="nav-item" onclick="goTo('facilities',this)"><span class="nav-icon">🏛️</span>Facility Booking</div>
+    <div class="nav-item" onclick="goTo('ordinances',this)"><span class="nav-icon">📜</span>Ordinances</div>
+    <div class="sidebar-label">Info</div>
+    <div class="nav-item" onclick="goTo('directory',this)"><span class="nav-icon">👥</span>Officials Directory</div>
+    <div class="nav-item" onclick="goTo('emergency',this)"><span class="nav-icon">🚨</span>Emergency<span class="nav-badge red">!</span></div>
+  </nav>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="welcome-banner">
+        <div class="welcome-text"><h2>Good morning, Ronian! 👋</h2><p>Brgy. San Cristobal, Laguna · <span id="today-date"></span></p></div>
+        <div class="welcome-emoji">🏘️</div>
+      </div>
+      <div class="grid-4" style="margin-bottom:22px;">
+        <div class="stat-card"><div class="stat-left-bar" style="background:linear-gradient(180deg,var(--green),var(--green-dark));"></div><div class="stat-label">Total Requests</div><div class="stat-value">24</div><div class="stat-icon">📄</div><div class="stat-change">↑ 3 this week</div></div>
+        <div class="stat-card"><div class="stat-left-bar" style="background:linear-gradient(180deg,#34D399,#059669);"></div><div class="stat-label">Reservations</div><div class="stat-value">8</div><div class="stat-icon">🪑</div><div class="stat-change">↑ 2 today</div></div>
+        <div class="stat-card"><div class="stat-left-bar" style="background:linear-gradient(180deg,#FF9500,#FF6B00);"></div><div class="stat-label">Ambulance Trips</div><div class="stat-value">5</div><div class="stat-icon">🚑</div><div class="stat-change" style="color:#B36B00;">1 pending</div></div>
+        <div class="stat-card"><div class="stat-left-bar" style="background:linear-gradient(180deg,#007AFF,#0055D4);"></div><div class="stat-label">Lost & Found</div><div class="stat-value">12</div><div class="stat-icon">🔍</div><div class="stat-change">2 reunited</div></div>
+      </div>
+      <div class="section-title">Quick Access</div>
+      <div class="grid-4" style="margin-bottom:24px;">
+        <div class="service-tile" onclick="goTo('documents',null)"><div class="tile-icon" style="background:var(--green-light);">📄</div><div class="tile-label">Request Doc</div><div class="tile-desc">Clearance, Residency, Indigency</div></div>
+        <div class="service-tile" onclick="goTo('tools',null)"><div class="tile-icon" style="background:var(--green-light);">🪑</div><div class="tile-label">Reserve Tools</div><div class="tile-desc">Canopies, Chairs & More</div></div>
+        <div class="service-tile" onclick="goTo('ambulance',null)"><div class="tile-icon" style="background:rgba(255,149,0,0.1);">🚑</div><div class="tile-label">Book Ambulance</div><div class="tile-desc">Non-emergency transport</div></div>
+        <div class="service-tile" onclick="goTo('emergency',null)"><div class="tile-icon" style="background:rgba(255,59,48,0.1);">🚨</div><div class="tile-label">Emergency</div><div class="tile-desc">Alert responders instantly</div></div>
+        <div class="service-tile" onclick="goTo('lostandfound',null)"><div class="tile-icon" style="background:rgba(175,82,222,0.1);">🔍</div><div class="tile-label">Lost & Found</div><div class="tile-desc">Report or browse items</div></div>
+        <div class="service-tile" onclick="goTo('facilities',null)"><div class="tile-icon" style="background:rgba(0,122,255,0.1);">🏛️</div><div class="tile-label">Book Facility</div><div class="tile-desc">Halls, Courts, Venues</div></div>
+        <div class="service-tile" onclick="goTo('ordinances',null)"><div class="tile-icon" style="background:var(--green-light);">📜</div><div class="tile-label">Ordinances</div><div class="tile-desc">Community rules & policies</div></div>
+        <div class="service-tile" onclick="goTo('directory',null)"><div class="tile-icon" style="background:var(--green-light);">👥</div><div class="tile-label">Directory</div><div class="tile-desc">Officials & services</div></div>
+      </div>
+      <div class="section-title">Recent Activity</div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Reference</th><th>Service</th><th>Date</th><th>Status</th></tr></thead><tbody>
+        <tr><td class="strong">REQ-2025-041</td><td>Barangay Clearance</td><td>Mar 5, 2026</td><td><span class="badge ready"><span class="badge-dot"></span>Ready for Pickup</span></td></tr>
+        <tr><td class="strong">RES-2025-018</td><td>2 Canopies, 30 Chairs</td><td>Mar 4, 2026</td><td><span class="badge approved"><span class="badge-dot"></span>Approved</span></td></tr>
+        <tr><td class="strong">AMB-2025-009</td><td>Ambulance (Mar 10)</td><td>Mar 3, 2026</td><td><span class="badge pending"><span class="badge-dot"></span>Pending</span></td></tr>
+        <tr><td class="strong">REQ-2025-039</td><td>Certificate of Indigency</td><td>Mar 1, 2026</td><td><span class="badge completed"><span class="badge-dot"></span>Completed</span></td></tr>
+      </tbody></table></div></div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div class="page" id="page-documents">
+      <div class="page-header"><h1>📄 Document Requests</h1><p>Submit and track official barangay document requests</p></div>
+      <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'tab-req-new')">New Request</div><div class="tab" onclick="switchTab(this,'tab-req-history')">My Requests</div></div>
+      <div class="tab-content active" id="tab-req-new">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Request a Document</div><div class="card-sub">Fill in the form to submit your request</div>
+            <div class="form-group"><label>Document Type</label><select><option>Barangay Clearance</option><option>Certificate of Residency</option><option>Certificate of Indigency</option><option>Barangay Business Permit</option><option>Certificate of Good Moral Character</option><option>Other Document</option></select></div>
+            <div class="form-group"><label>Purpose</label><select><option>Employment</option><option>School/Academic Requirement</option><option>Bank/Financial</option><option>Government Transaction</option><option>Personal Record</option><option>Other</option></select></div>
+            <div class="form-group"><label>Full Name</label><input type="text" value="Juan Dela Cruz"></div>
+            <div class="form-group"><label>Contact Number</label><input type="text" placeholder="+63 9XX XXX XXXX"></div>
+            <div class="form-group"><label>Additional Notes</label><textarea placeholder="Any special instructions..."></textarea></div>
+            <button class="btn btn-primary btn-full" onclick="showToast('✅','Request Submitted!','Ref: REQ-2026-042. You\'ll be notified when ready.')">📤 Submit Request</button>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-title">📋 Processing Times</div><div class="card-sub">Estimated turnaround after submission</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:8px;align-items:center;"><span style="font-size:13px;font-weight:600;">Barangay Clearance</span><span style="font-size:11.5px;color:var(--green-deeper);font-weight:600;">1–2 days</span></div>
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:8px;align-items:center;"><span style="font-size:13px;font-weight:600;">Certificate of Residency</span><span style="font-size:11.5px;color:var(--green-deeper);font-weight:600;">1 day</span></div>
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:8px;align-items:center;"><span style="font-size:13px;font-weight:600;">Certificate of Indigency</span><span style="font-size:11.5px;color:#B36B00;font-weight:600;">2–3 days</span></div>
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:8px;align-items:center;"><span style="font-size:13px;font-weight:600;">Business Permit</span><span style="font-size:11.5px;color:#B36B00;font-weight:600;">3–5 days</span></div>
+              </div>
+            </div>
+            <div class="hint-card"><div style="font-size:19px;margin-bottom:6px;">💡</div><div style="font-weight:700;font-size:13px;margin-bottom:5px;color:var(--green-deeper);">Reminder</div><div style="font-size:12.5px;color:var(--text2);line-height:1.6;">You'll receive a notification when ready. Bring a valid ID when claiming at the barangay hall.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-content" id="tab-req-history">
+        <div class="card"><div class="search-bar"><span class="search-icon">🔎</span><input placeholder="Search by reference or document type..."></div><div class="table-wrap"><table><thead><tr><th>Reference</th><th>Document</th><th>Purpose</th><th>Date Filed</th><th>Status</th><th>Action</th></tr></thead><tbody>
+          <tr><td class="strong">REQ-2025-041</td><td>Barangay Clearance</td><td>Employment</td><td>Mar 5, 2026</td><td><span class="badge ready"><span class="badge-dot"></span>Ready for Pickup</span></td><td><button class="btn btn-secondary btn-sm" onclick="openTracker()">Track</button></td></tr>
+          <tr><td class="strong">REQ-2025-039</td><td>Cert. of Indigency</td><td>School</td><td>Mar 1, 2026</td><td><span class="badge completed"><span class="badge-dot"></span>Completed</span></td><td><button class="btn btn-secondary btn-sm">View</button></td></tr>
+          <tr><td class="strong">REQ-2025-031</td><td>Cert. of Residency</td><td>Bank</td><td>Feb 20, 2026</td><td><span class="badge completed"><span class="badge-dot"></span>Completed</span></td><td><button class="btn btn-secondary btn-sm">View</button></td></tr>
+        </tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="page" id="page-tools">
+      <div class="page-header"><h1>🪑 Tool Reservations</h1><p>Reserve community tools — max 2 canopies & 50 chairs per resident</p></div>
+      <div class="grid-4" style="margin-bottom:22px;">
+        <div class="resource-card"><div class="resource-icon">⛺</div><div class="resource-name">Canopies</div><div class="resource-count">6 of 10 available</div><div class="avail-bar"><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div></div><div class="resource-avail good">Available</div></div>
+        <div class="resource-card"><div class="resource-icon">🪑</div><div class="resource-name">Plastic Chairs</div><div class="resource-count">80 of 150 available</div><div class="avail-bar"><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div></div><div class="resource-avail good">Available</div></div>
+        <div class="resource-card"><div class="resource-icon">🎙️</div><div class="resource-name">Sound System</div><div class="resource-count">1 of 2 available</div><div class="avail-bar"><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg free"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div></div><div class="resource-avail limited">Limited</div></div>
+        <div class="resource-card"><div class="resource-icon">💡</div><div class="resource-name">Generator</div><div class="resource-count">0 of 1 available</div><div class="avail-bar"><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div><div class="avail-seg taken"></div></div><div class="resource-avail full">Not Available</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">New Reservation</div><div class="card-sub">Reserve tools for your community event</div>
+          <div class="form-group"><label>Event Name / Purpose</label><input placeholder="e.g. Birthday Celebration"></div>
+          <div class="form-group"><label>Reservation Date</label><input type="date"></div>
+          <div class="form-group"><label>Return Date</label><input type="date"></div>
+          <div class="form-group"><label>Canopies <span style="color:var(--text3);font-weight:400;">(max 2)</span></label><input type="number" min="0" max="2" value="1"></div>
+          <div class="form-group"><label>Chairs <span style="color:var(--text3);font-weight:400;">(max 50)</span></label><input type="number" min="0" max="50" value="20"></div>
+          <div class="form-group"><label>Additional Items</label><select><option>None</option><option>Sound System</option><option>Generator</option></select></div>
+          <button class="btn btn-primary btn-full" onclick="showToast('✅','Reservation Submitted!','Ref: RES-2026-019. Check your reservations.')">📋 Submit Reservation</button>
+        </div>
+        <div class="card">
+          <div class="card-title">My Reservations</div><div class="card-sub">Upcoming and past reservations</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:var(--green-light);border:1.5px solid var(--green-border);border-radius:12px;padding:14px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><div style="font-weight:700;font-size:13.5px;">Fiesta Celebration</div><span class="badge approved"><span class="badge-dot"></span>Approved</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="info-chip">📅 Mar 15, 2026</span><span class="info-chip">⛺ 2 Canopies</span><span class="info-chip">🪑 50 Chairs</span></div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px;font-weight:500;">RES-2025-018</div>
+            </div>
+            <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><div style="font-weight:700;font-size:13.5px;">Birthday Party</div><span class="badge completed"><span class="badge-dot"></span>Completed</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="info-chip">📅 Feb 8, 2026</span><span class="info-chip">⛺ 1 Canopy</span><span class="info-chip">🪑 30 Chairs</span></div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px;font-weight:500;">RES-2025-011</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AMBULANCE -->
+    <div class="page" id="page-ambulance">
+      <div class="page-header"><h1>🚑 Ambulance Scheduling</h1><p>Book non-emergency medical transport — for emergencies use the Emergency page</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Schedule Ambulance</div><div class="card-sub">Non-emergency transport only</div>
+          <div class="form-group"><label>Patient Name</label><input placeholder="Full name of patient"></div>
+          <div class="form-group"><label>Patient Age</label><input type="number" placeholder="Age"></div>
+          <div class="form-group"><label>Medical Condition / Reason</label><textarea placeholder="Brief description..."></textarea></div>
+          <div class="form-group"><label>Preferred Date</label><input type="date"></div>
+          <div class="form-group"><label>Preferred Time</label><input type="time"></div>
+          <div class="form-group"><label>Destination</label><input placeholder="e.g. Cavite General Hospital"></div>
+          <div class="form-group"><label>Contact Number</label><input placeholder="+63 9XX XXX XXXX"></div>
+          <button class="btn btn-primary btn-full" onclick="showToast('🚑','Ambulance Booked!','Ref: AMB-2026-010. Confirmation coming soon.')">📅 Book Ambulance</button>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title">📅 March 2026 Availability</div><div class="card-sub">Tap a date to select</div>
+            <div id="amb-cal" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;"></div>
+            <div style="display:flex;gap:14px;margin-top:12px;font-size:11.5px;color:var(--text2);">
+              <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--green-light);border:1px solid var(--green-border);display:inline-block;"></span>Available</span>
+              <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:3px;background:rgba(255,59,48,0.15);display:inline-block;"></span>Taken</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">My Bookings</div>
+            <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-top:8px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><div style="font-weight:700;font-size:13.5px;">Dialysis Transport</div><span class="badge pending"><span class="badge-dot"></span>Pending</span></div>
+              <span class="info-chip">📅 Mar 10, 2026 9:00 AM</span><br>
+              <span class="info-chip" style="margin-top:6px;">🏥 Cavite General Hospital</span>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px;font-weight:500;">AMB-2025-009</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRACKER -->
+    <div class="page" id="page-tracker">
+      <div class="page-header"><h1>📦 Service Tracker</h1><p>Track the real-time status of your barangay service requests</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Your Requests</div><div class="card-sub">Click any request to view progress</div>
+          <div class="search-bar" style="margin-top:12px;"><span class="search-icon">🔎</span><input placeholder="Enter reference number..."></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div id="rq1" style="padding:13px 14px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;" onclick="selectRequest('REQ-2025-041','Barangay Clearance','ready','rq1')"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:700;font-size:13px;">REQ-2025-041</div><div style="font-size:11.5px;color:var(--text3);">Barangay Clearance</div></div><span class="badge ready"><span class="badge-dot"></span>Ready</span></div></div>
+            <div id="rq2" style="padding:13px 14px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;" onclick="selectRequest('RES-2025-018','2 Canopies + 50 Chairs','approved','rq2')"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:700;font-size:13px;">RES-2025-018</div><div style="font-size:11.5px;color:var(--text3);">Tool Reservation</div></div><span class="badge approved"><span class="badge-dot"></span>Approved</span></div></div>
+            <div id="rq3" style="padding:13px 14px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;" onclick="selectRequest('AMB-2025-009','Dialysis Transport','pending','rq3')"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:700;font-size:13px;">AMB-2025-009</div><div style="font-size:11.5px;color:var(--text3);">Ambulance Booking</div></div><span class="badge pending"><span class="badge-dot"></span>Pending</span></div></div>
+          </div>
+        </div>
+        <div class="card" id="tracker-detail"><div style="text-align:center;padding:40px 20px;color:var(--text4);"><div style="font-size:44px;margin-bottom:12px;">👆</div><div style="font-size:14px;font-weight:600;">Select a request to view its progress</div></div></div>
+      </div>
+    </div>
+
+    <!-- LOST & FOUND -->
+    <div class="page" id="page-lostandfound">
+      <div class="page-header"><h1>🔍 Lost & Found</h1><p>Report lost items or browse found items posted by the barangay</p></div>
+      <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'tab-lf-browse')">Browse Items</div><div class="tab" onclick="switchTab(this,'tab-lf-report')">Report Lost</div><div class="tab" onclick="switchTab(this,'tab-lf-post')">Post Found</div></div>
+      <div class="tab-content active" id="tab-lf-browse">
+        <div class="search-bar"><span class="search-icon">🔎</span><input placeholder="Search lost or found items..."></div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;"><button class="btn btn-primary btn-sm">All</button><button class="btn btn-secondary btn-sm">Lost</button><button class="btn btn-secondary btn-sm">Found</button></div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="lf-card"><div class="lf-img">👛</div><div class="lf-info"><h4>Brown Leather Wallet</h4><p>Found near Barangay Hall gate. Contains ID cards and cash. No money removed.</p><div class="lf-meta"><span class="badge found"><span class="badge-dot"></span>Found</span><span class="info-chip">📅 Mar 4, 2026</span><span class="info-chip">📍 Brgy Hall Gate</span></div></div><button class="btn btn-primary btn-sm" onclick="showToast('📞','Claim Sent','Barangay notified of your claim.')">Claim</button></div>
+          <div class="lf-card"><div class="lf-img">📱</div><div class="lf-info"><h4>Samsung Galaxy Phone (Black)</h4><p>LOST near the covered court during the basketball game. Cracked corner screen.</p><div class="lf-meta"><span class="badge lost"><span class="badge-dot"></span>Lost</span><span class="info-chip">📅 Mar 2, 2026</span><span class="info-chip">📍 Covered Court</span></div></div><button class="btn btn-secondary btn-sm" onclick="showToast('📞','Contact Shared','The reporter will be notified.')">I Found It</button></div>
+          <div class="lf-card"><div class="lf-img">🐕</div><div class="lf-info"><h4>Brown Aspin Dog (Medium)</h4><p>FOUND wandering along Maharlika St. No collar. Friendly and calm. Currently at barangay.</p><div class="lf-meta"><span class="badge found"><span class="badge-dot"></span>Found</span><span class="info-chip">📅 Mar 3, 2026</span><span class="info-chip">📍 Maharlika St.</span></div></div><button class="btn btn-primary btn-sm" onclick="showToast('📞','Claim Sent','Barangay notified of your claim.')">Claim</button></div>
+        </div>
+      </div>
+      <div class="tab-content" id="tab-lf-report">
+        <div class="card" style="max-width:540px;">
+          <div class="card-title">Report a Lost Item</div><div class="card-sub">Help the barangay find your belongings</div>
+          <div class="form-group"><label>Item Name</label><input placeholder="e.g. Blue Backpack"></div>
+          <div class="form-group"><label>Description</label><textarea placeholder="Color, brand, distinguishing marks..."></textarea></div>
+          <div class="form-group"><label>Last Seen Location</label><input placeholder="e.g. Near the market"></div>
+          <div class="form-group"><label>Date Lost</label><input type="date"></div>
+          <div class="form-group"><label>Your Contact Number</label><input placeholder="+63 9XX XXX XXXX"></div>
+          <button class="btn btn-primary btn-full" onclick="showToast('🔍','Report Submitted!','Your lost item has been posted.')">Submit Report</button>
+        </div>
+      </div>
+      <div class="tab-content" id="tab-lf-post">
+        <div class="card" style="max-width:540px;">
+          <div class="card-title">Post a Found Item</div><div class="card-sub">Help reunite owners with their belongings</div>
+          <div class="form-group"><label>Item Name</label><input placeholder="e.g. Brown Wallet"></div>
+          <div class="form-group"><label>Description</label><textarea placeholder="Describe so the owner can identify it..."></textarea></div>
+          <div class="form-group"><label>Found Location</label><input placeholder="Where did you find it?"></div>
+          <div class="form-group"><label>Date Found</label><input type="date"></div>
+          <div class="form-group"><label>Item Currently At</label><select><option>Barangay Hall</option><option>With Finder (contact given)</option></select></div>
+          <button class="btn btn-primary btn-full" onclick="showToast('✅','Found Item Posted!','Community will be notified. Thank you!')">Post Item</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACILITY BOOKING -->
+    <div class="page" id="page-facilities">
+      <div class="page-header"><h1>🏛️ Facility Booking</h1><p>Book barangay venues for seminars, conferences, gatherings, sports, and activities</p></div>
+      <div class="grid-3" style="margin-bottom:22px;">
+        <div class="card" style="cursor:pointer;text-align:center;" onclick="showToast('🏛️','Barangay Hall selected','Fill in the booking form.')"><div style="font-size:32px;margin-bottom:8px;">🏛️</div><div style="font-weight:700;font-size:14px;margin-bottom:4px;">Barangay Hall</div><div style="font-size:12px;color:var(--text3);margin-bottom:10px;">150 persons · Seminars, conferences</div><span class="badge approved"><span class="badge-dot"></span>Available</span></div>
+        <div class="card" style="cursor:pointer;text-align:center;" onclick="showToast('🏀','Covered Court selected','Fill in the booking form.')"><div style="font-size:32px;margin-bottom:8px;">🏀</div><div style="font-weight:700;font-size:14px;margin-bottom:4px;">Covered Court</div><div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Sports, rallies, outdoor gatherings</div><span class="badge approved"><span class="badge-dot"></span>Available</span></div>
+        <div class="card" style="cursor:pointer;text-align:center;" onclick="showToast('🌳','Mini Park selected','Fill in the booking form.')"><div style="font-size:32px;margin-bottom:8px;">🌳</div><div style="font-weight:700;font-size:14px;margin-bottom:4px;">Mini Park / Plaza</div><div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Outdoor programs, community events</div><span class="badge pending"><span class="badge-dot"></span>Reserved Mar 10</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Book a Facility</div><div class="card-sub">Submit a request — confirmed within 1–2 business days</div>
+          <div class="form-group"><label>Facility</label><select><option>Barangay Hall</option><option>Covered Court</option><option>Mini Park / Plaza</option></select></div>
+          <div class="form-group"><label>Event Type</label><select><option>Seminar / Training</option><option>Conference</option><option>Sports Event</option><option>Community Gathering</option><option>Rally</option><option>Other</option></select></div>
+          <div class="form-group"><label>Event Name</label><input placeholder="e.g. Health Awareness Seminar"></div>
+          <div class="form-group"><label>Organization / Group</label><input placeholder="e.g. BSDO, SK, Parent Group"></div>
+          <div class="form-group"><label>Date</label><input type="date"></div>
+          <div class="form-group"><label>Time</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><input type="time"><input type="time"></div></div>
+          <div class="form-group"><label>Expected Attendees</label><input type="number" placeholder="Number of people"></div>
+          <button class="btn btn-primary btn-full" onclick="showToast('🏛️','Facility Booked!','Ref: FAC-2026-007. Awaiting confirmation.')">Submit Booking</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Booking Guidelines</div>
+          <div class="mini-block"><div style="font-weight:700;font-size:13px;margin-bottom:6px;">📋 Requirements</div><ul style="font-size:12.5px;color:var(--text2);line-height:1.9;padding-left:16px;"><li>Submit at least 3 days in advance</li><li>Provide proof of organization</li><li>Clean up after the event</li><li>No alcoholic beverages inside halls</li></ul></div>
+          <div class="mini-block"><div style="font-weight:700;font-size:13px;margin-bottom:6px;">⏰ Office Hours</div><div style="font-size:12.5px;color:var(--text2);line-height:1.9;">Mon–Fri: 8:00 AM – 5:00 PM<br>Saturday: 8:00 AM – 12:00 PM</div></div>
+          <div class="hint-card"><div style="font-weight:700;font-size:13px;color:var(--green-deeper);">💡 Tip</div><div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.6;">Book early — weekends and holidays fill up fast!</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDINANCES -->
+    <div class="page" id="page-ordinances">
+      <div class="page-header"><h1>📜 Barangay Ordinances</h1><p>Read and understand your community's rules and regulations</p></div>
+      <div class="search-bar"><span class="search-icon">🔎</span><input placeholder="Search ordinances..."></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="ordinance-item"><div class="ordinance-header" onclick="toggleOrdinance(this)"><div><h3>Ordinance No. 2024-01: Noise Control</h3><p>Enacted Jan 15, 2024 — Community Peace</p></div><span class="chevron">▼</span></div><div class="ordinance-body">This ordinance regulates excessive, unnecessary, or unreasonably loud noise. Prohibited hours are 10:00 PM–6:00 AM on weekdays and 11:00 PM–7:00 AM on weekends. Violators are subject to fines as prescribed by the barangay council.</div></div>
+        <div class="ordinance-item"><div class="ordinance-header" onclick="toggleOrdinance(this)"><div><h3>Ordinance No. 2024-03: Waste Management</h3><p>Enacted Mar 2, 2024 — Environmental</p></div><span class="chevron">▼</span></div><div class="ordinance-body">Residents must segregate waste into biodegradable, non-biodegradable, and special categories. Garbage must be placed out only on designated collection days. Open burning is strictly prohibited. Littering in public areas is subject to fines.</div></div>
+        <div class="ordinance-item"><div class="ordinance-header" onclick="toggleOrdinance(this)"><div><h3>Ordinance No. 2024-05: Anti-Loitering</h3><p>Enacted May 10, 2024 — Peace & Order</p></div><span class="chevron">▼</span></div><div class="ordinance-body">Minors under 18 are prohibited from loitering in public places without adult supervision between 10:00 PM and 5:00 AM. Barangay tanods may escort minors found in violation to the barangay hall for documentation and guardian notification.</div></div>
+        <div class="ordinance-item"><div class="ordinance-header" onclick="toggleOrdinance(this)"><div><h3>Ordinance No. 2025-02: Animal Control</h3><p>Enacted Feb 20, 2025 — Public Safety</p></div><span class="chevron">▼</span></div><div class="ordinance-body">All pet owners must register animals with the barangay. Dogs must be kept on leash in public. Stray animals may be apprehended. Pet owners must ensure rabies vaccination for their animals.</div></div>
+        <div class="ordinance-item"><div class="ordinance-header" onclick="toggleOrdinance(this)"><div><h3>Ordinance No. 2025-04: Curfew for Minors</h3><p>Enacted Apr 5, 2025 — Child Welfare</p></div><span class="chevron">▼</span></div><div class="ordinance-body">Children below 15 must be home by 9:00 PM. Ages 15–17 must be accompanied after 10:00 PM. Exceptions include school activities, medical emergencies, and employment. Negligent parents may be summoned by Lupong Tagapamayapa.</div></div>
+      </div>
+    </div>
+
+    <!-- DIRECTORY -->
+    <div class="page" id="page-directory">
+      <div class="page-header"><h1>👥 Public Directory</h1><p>Barangay officials, contact numbers, and essential service lines</p></div>
+      <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'tab-dir-officials')">Barangay Officials</div><div class="tab" onclick="switchTab(this,'tab-dir-services')">Emergency Services</div></div>
+      <div class="tab-content active" id="tab-dir-officials">
+        <div class="search-bar"><span class="search-icon">🔎</span><input placeholder="Search officials by name or position..."></div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="official-card"><div class="official-avatar" style="background:linear-gradient(135deg,var(--green),var(--green-dark));">RC</div><div class="official-info"><div class="official-name">Hon. Roberto Cruz</div><div class="official-role">Punong Barangay (Barangay Captain)</div><div class="official-contact">📞 0917-123-4567</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('📞','Calling...','Dialing Punong Barangay Cruz')">Call</button></div>
+          <div class="official-card"><div class="official-avatar" style="background:linear-gradient(135deg,#34D399,#059669);">ML</div><div class="official-info"><div class="official-name">Maria Liza Santos</div><div class="official-role">Barangay Secretary</div><div class="official-contact">📞 0918-234-5678</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('📞','Calling...','Dialing Secretary Santos')">Call</button></div>
+          <div class="official-card"><div class="official-avatar" style="background:linear-gradient(135deg,#FBBF24,#D97706);">JR</div><div class="official-info"><div class="official-name">Jose Reyes</div><div class="official-role">Barangay Treasurer</div><div class="official-contact">📞 0919-345-6789</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('📞','Calling...','Dialing Treasurer Reyes')">Call</button></div>
+          <div class="official-card"><div class="official-avatar" style="background:linear-gradient(135deg,var(--green),#00B8A0);">AG</div><div class="official-info"><div class="official-name">Ana Garcia</div><div class="official-role">Kagawad — Health & Sanitation</div><div class="official-contact">📞 0920-456-7890</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('📞','Calling...','Dialing Kagawad Garcia')">Call</button></div>
+          <div class="official-card"><div class="official-avatar" style="background:linear-gradient(135deg,#60A5FA,#2563EB);">PL</div><div class="official-info"><div class="official-name">Pedro Luna</div><div class="official-role">Kagawad — Peace & Order</div><div class="official-contact">📞 0921-567-8901</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('📞','Calling...','Dialing Kagawad Luna')">Call</button></div>
+          <div class="official-card"><div class="official-avatar" style="background:linear-gradient(135deg,var(--green-dark),#047857);">CM</div><div class="official-info"><div class="official-name">Carlos Mendoza</div><div class="official-role">SK Chairperson</div><div class="official-contact">📞 0922-678-9012</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('📞','Calling...','Dialing SK Chair Mendoza')">Call</button></div>
+        </div>
+      </div>
+      <div class="tab-content" id="tab-dir-services">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="contact-card"><div class="contact-icon-wrap" style="background:rgba(255,59,48,0.1);">🚒</div><div class="contact-detail"><div class="contact-name">Bureau of Fire Protection</div><div class="contact-type">Fire Station — Imus City</div><div class="contact-number">📞 (046) 471-0119 · 911</div></div><button class="btn btn-danger btn-sm" onclick="showToast('🚒','Calling BFP...','Connecting to fire station')">Call</button></div>
+          <div class="contact-card"><div class="contact-icon-wrap" style="background:rgba(0,122,255,0.1);">👮</div><div class="contact-detail"><div class="contact-name">Philippine National Police</div><div class="contact-type">Imus City Police Station</div><div class="contact-number">📞 (046) 472-5312 · 166</div></div><button class="btn btn-danger btn-sm" onclick="showToast('👮','Calling PNP...','Connecting to police station')">Call</button></div>
+          <div class="contact-card"><div class="contact-icon-wrap" style="background:rgba(0,200,83,0.1);">🏥</div><div class="contact-detail"><div class="contact-name">Cavite General Hospital</div><div class="contact-type">Government Hospital — Trece Martires</div><div class="contact-number">📞 (046) 419-2131</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('🏥','Calling CGH...','Connecting to hospital')">Call</button></div>
+          <div class="contact-card"><div class="contact-icon-wrap" style="background:rgba(0,200,83,0.1);">🚑</div><div class="contact-detail"><div class="contact-name">Barangay Ambulance</div><div class="contact-type">Brgy. Mabuhay Emergency Transport</div><div class="contact-number">📞 0917-BARANGAY</div></div><button class="btn btn-danger btn-sm" onclick="showToast('🚑','Calling Ambulance...','Barangay ambulance on the line')">Call</button></div>
+          <div class="contact-card"><div class="contact-icon-wrap" style="background:rgba(255,149,0,0.1);">⚡</div><div class="contact-detail"><div class="contact-name">MERALCO</div><div class="contact-type">Power Outage / Electrical Emergency</div><div class="contact-number">📞 16211</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('⚡','Calling MERALCO...','Connecting')">Call</button></div>
+          <div class="contact-card"><div class="contact-icon-wrap" style="background:rgba(0,122,255,0.1);">💧</div><div class="contact-detail"><div class="contact-name">NAWASA / Water District</div><div class="contact-type">Water Supply & Repairs</div><div class="contact-number">📞 (046) 472-0091</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('💧','Calling Water District...','Connecting')">Call</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMERGENCY -->
+    <div class="page" id="page-emergency">
+      <div class="page-header"><h1>🚨 Emergency</h1><p>For life-threatening situations — alert barangay responders immediately</p></div>
+      <div style="max-width:560px;margin:0 auto;">
+        <div style="background:rgba(255,59,48,0.05);border:1.5px solid rgba(255,59,48,0.2);border-radius:var(--radius);padding:24px;margin-bottom:20px;text-align:center;">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:18px;font-weight:500;">Press to immediately alert barangay emergency responders.</div>
+          <button class="emergency-btn" onclick="triggerEmergency()">🆘 SEND EMERGENCY ALERT</button>
+          <div style="font-size:11.5px;color:var(--text3);margin-top:12px;">This notifies barangay tanods and the duty officer instantly.</div>
+        </div>
+        <div class="grid-2" style="margin-bottom:18px;">
+          <div class="contact-card" style="cursor:pointer;" onclick="showToast('🚒','Calling BFP...','911')"><div class="contact-icon-wrap" style="background:rgba(255,59,48,0.1);font-size:24px;">🚒</div><div class="contact-detail"><div class="contact-name">Fire Emergency</div><div class="contact-number">911 / BFP</div></div></div>
+          <div class="contact-card" style="cursor:pointer;" onclick="showToast('👮','Calling PNP...','166')"><div class="contact-icon-wrap" style="background:rgba(0,122,255,0.1);font-size:24px;">👮</div><div class="contact-detail"><div class="contact-name">Police Emergency</div><div class="contact-number">166 / PNP</div></div></div>
+          <div class="contact-card" style="cursor:pointer;" onclick="showToast('🚑','Calling...','Barangay Medical Emergency')"><div class="contact-icon-wrap" style="background:rgba(0,200,83,0.1);font-size:24px;">🚑</div><div class="contact-detail"><div class="contact-name">Medical Emergency</div><div class="contact-number">0917-BARANGAY</div></div></div>
+          <div class="contact-card" style="cursor:pointer;" onclick="showToast('🌪️','Calling NDRRMC...','National Disaster Line')"><div class="contact-icon-wrap" style="background:rgba(255,149,0,0.1);font-size:24px;">🌪️</div><div class="contact-detail"><div class="contact-name">Disaster Response</div><div class="contact-number">NDRRMC 911</div></div></div>
+        </div>
+        <div class="card" style="border-color:rgba(255,149,0,0.25);">
+          <div style="font-weight:700;font-size:14px;margin-bottom:10px;">⚠️ When to Use the Emergency Button</div>
+          <ul style="font-size:13px;color:var(--text2);line-height:2;padding-left:18px;"><li>Medical emergency or cardiac arrest</li><li>Fire or structural hazard</li><li>Crime in progress</li><li>Serious accident or injury</li><li>Flooding or natural disaster</li></ul>
+          <hr class="divider">
+          <div style="font-size:12px;color:var(--text3);">For non-emergency transport, use the <strong>Ambulance Scheduling</strong> page instead.</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <div class="bottom-nav-item active" onclick="goTo('dashboard',this)"><span class="b-icon">🏠</span>Home</div>
+    <div class="bottom-nav-item" onclick="goTo('documents',this)"><span class="b-icon">📄</span>Docs</div>
+    <div class="bottom-nav-item" onclick="goTo('tools',this)"><span class="b-icon">🪑</span>Tools</div>
+    <div class="bottom-nav-item" onclick="goTo('tracker',this)"><span class="b-icon">📦</span>Track</div>
+    <div class="bottom-nav-item" onclick="goTo('lostandfound',this)"><span class="b-icon">🔍</span>L&F</div>
+    <div class="bottom-nav-item" onclick="goTo('facilities',this)"><span class="b-icon">🏛️</span>Venue</div>
+    <div class="bottom-nav-item" onclick="goTo('ordinances',this)"><span class="b-icon">📜</span>Rules</div>
+    <div class="bottom-nav-item" onclick="goTo('directory',this)"><span class="b-icon">👥</span>Dir</div>
+    <div class="bottom-nav-item" onclick="goTo('emergency',this)"><span class="b-icon">🚨</span>SOS</div>
+  </div>
+</nav>
+
+<div class="modal-overlay" id="tracker-modal">
+  <div class="modal">
+    <div class="modal-header"><h2>📦 Request Tracker</h2><div class="modal-close" onclick="closeModal('tracker-modal')">✕</div></div>
+    <div style="margin-bottom:20px;"><div style="font-size:10.5px;color:var(--text3);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Reference Number</div><div style="font-size:20px;font-weight:800;margin-top:2px;">REQ-2025-041</div><div style="font-size:13px;color:var(--text2);margin-top:3px;">Barangay Clearance · Filed Mar 5, 2026</div></div>
+    <div class="tracker-steps">
+      <div class="tracker-step"><div class="tracker-step-line"><div class="tracker-dot done">✓</div><div class="tracker-connector done"></div></div><div class="tracker-content"><h4>Request Submitted</h4><p>Mar 5, 2026 · 9:42 AM</p></div></div>
+      <div class="tracker-step"><div class="tracker-step-line"><div class="tracker-dot done">✓</div><div class="tracker-connector done"></div></div><div class="tracker-content"><h4>Under Review</h4><p>Mar 5, 2026 · 10:15 AM</p></div></div>
+      <div class="tracker-step"><div class="tracker-step-line"><div class="tracker-dot done">✓</div><div class="tracker-connector done"></div></div><div class="tracker-content"><h4>Approved</h4><p>Mar 5, 2026 · 2:30 PM</p></div></div>
+      <div class="tracker-step"><div class="tracker-step-line"><div class="tracker-dot active">●</div><div class="tracker-connector pending"></div></div><div class="tracker-content"><h4 style="color:var(--green-deeper);">Ready for Pickup</h4><p>Mar 6, 2026 · 8:00 AM · Barangay Hall</p></div></div>
+      <div class="tracker-step"><div class="tracker-step-line"><div class="tracker-dot waiting">○</div></div><div class="tracker-content"><h4 style="color:var(--text4);">Completed</h4><p style="color:var(--text4);">Awaiting pickup</p></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const cal = document.getElementById('amb-cal');
+  const takenDays = [4,8,12,18,23];
+  for(let d=1;d<=30;d++){
+    const t = takenDays.includes(d);
+    const el = document.createElement('div');
+    el.textContent = d;
+    el.style.cssText = `width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;background:${t?'rgba(255,59,48,0.08)':'var(--green-light)'};color:${t?'var(--red)':'var(--green-deeper)'};border-color:${t?'rgba(255,59,48,0.2)':'var(--green-border)'};`;
+    if(!t){ el.onmouseover=()=>el.style.background='var(--green-mid)'; el.onmouseout=()=>el.style.background='var(--green-light)'; }
+    cal.appendChild(el);
+  }
+
+  function goTo(pageId, navEl) {
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n=>n.classList.remove('active'));
+    document.getElementById('page-'+pageId)?.classList.add('active');
+    if(navEl && navEl.classList) navEl.classList.add('active');
+    const sideMap={dashboard:0,documents:1,tools:2,ambulance:3,tracker:4,lostandfound:5,facilities:6,ordinances:7,directory:8,emergency:9};
+    const navItems=document.querySelectorAll('.nav-item');
+    if(navItems[sideMap[pageId]]) navItems[sideMap[pageId]].classList.add('active');
+  }
+
+  function switchTab(tabEl, contentId) {
+    tabEl.closest('.tab-bar').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tabEl.classList.add('active');
+    const content = document.getElementById(contentId);
+    if(content){ content.parentElement.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); content.classList.add('active'); }
+  }
+
+  function toggleOrdinance(header) {
+    const body=header.nextElementSibling, chevron=header.querySelector('.chevron'), isOpen=body.classList.contains('open');
+    document.querySelectorAll('.ordinance-body').forEach(b=>b.classList.remove('open'));
+    document.querySelectorAll('.chevron').forEach(c=>c.classList.remove('open'));
+    if(!isOpen){ body.classList.add('open'); chevron.classList.add('open'); }
+  }
+
+  function openTracker(){ document.getElementById('tracker-modal').classList.add('open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+  let lastRow=null;
+  function selectRequest(ref,label,status,rowId){
+    if(lastRow){ const el=document.getElementById(lastRow); if(el){el.style.background='';el.style.borderColor='var(--border)';} }
+    lastRow=rowId;
+    const row=document.getElementById(rowId);
+    if(row){row.style.background='var(--green-light)';row.style.borderColor='var(--green-border)';}
+    const steps={
+      ready:[{l:'Request Submitted',t:'Mar 5 · 9:42 AM',s:'done'},{l:'Under Review',t:'Mar 5 · 10:15 AM',s:'done'},{l:'Approved',t:'Mar 5 · 2:30 PM',s:'done'},{l:'Ready for Pickup',t:'Mar 6 · 8:00 AM · Brgy Hall',s:'active'},{l:'Completed',t:'Awaiting pickup',s:'waiting'}],
+      approved:[{l:'Reservation Submitted',t:'Mar 4 · 3:00 PM',s:'done'},{l:'Reviewed by Staff',t:'Mar 4 · 4:00 PM',s:'done'},{l:'Approved',t:'Mar 4 · 5:00 PM',s:'active'},{l:'Picked Up',t:'Awaiting',s:'waiting'},{l:'Returned',t:'Awaiting',s:'waiting'}],
+      pending:[{l:'Request Submitted',t:'Mar 3 · 11:00 AM',s:'done'},{l:'Under Review',t:'Processing',s:'active'},{l:'Approved',t:'Awaiting',s:'waiting'},{l:'Scheduled',t:'Mar 10, 2026',s:'waiting'},{l:'Completed',t:'Awaiting',s:'waiting'}],
+    };
+    const list=steps[status]||steps.pending;
+    document.getElementById('tracker-detail').innerHTML=`<div style="margin-bottom:18px;"><div style="font-size:10.5px;color:var(--text3);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Reference</div><div style="font-size:20px;font-weight:800;margin-top:2px;">${ref}</div><div style="font-size:13px;color:var(--text2);margin-top:3px;">${label}</div></div><div class="tracker-steps">${list.map((s,i)=>`<div class="tracker-step"><div class="tracker-step-line"><div class="tracker-dot ${s.s}">${s.s==='done'?'✓':s.s==='active'?'●':'○'}</div>${i<list.length-1?`<div class="tracker-connector ${s.s==='done'?'done':'pending'}"></div>`:''}</div><div class="tracker-content"><h4 style="${s.s==='active'?'color:var(--green-deeper)':s.s==='waiting'?'color:var(--text4)':''}">${s.l}</h4><p style="${s.s==='waiting'?'color:var(--text4)':''}">${s.t}</p></div></div>`).join('')}</div>`;
+  }
+
+  function triggerEmergency(){
+    const btn=document.querySelector('.emergency-btn');
+    btn.innerHTML='📡 ALERT SENT — HELP IS COMING';
+    btn.style.background='linear-gradient(135deg,#B71C1C,#D32F2F)';
+    showToast('🚨','Emergency Alert Sent!','Barangay responders have been notified. Stay calm.');
+    setTimeout(()=>{btn.innerHTML='🆘 SEND EMERGENCY ALERT';btn.style.background='';},5000);
+  }
+
+  function showToast(icon,title,message){
+    const c=document.getElementById('toast-container');
+    const t=document.createElement('div');
+    t.className='toast';
+    t.innerHTML=`<span class="toast-icon">${icon}</span><div class="toast-text"><strong>${title}</strong><span>${message}</span></div><div class="toast-bar"></div>`;
+    c.appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .28s';setTimeout(()=>t.remove(),300);},4300);
+  }
+
+  document.querySelector('.modal-overlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+</script>
+</body>
+</html>
